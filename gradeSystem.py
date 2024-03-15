@@ -1,5 +1,11 @@
 """
-Grade systempyth
+Grade system
+--- [這裡給我們自己看] ----
+TO DO
+1. 刻好query的各method
+2. 最外層for loop, 讀input -> call query的相應method
+3. 在可能出錯地方加 try...except... block 
+4. 現在的try...except... block 只有打印error, 需加上code 接回去讓使用者重新輸入
 """
 
 import pandas as pd
@@ -34,7 +40,7 @@ class Students:
         """
         Parameters
         ------
-        nreWeight: list of float
+        newWeight: list of float
         """
         try:
             assert isinstance(newWeight, list)
@@ -230,9 +236,7 @@ if __name__ == "__main__":
     # ------ Initialization  ---------#
     student = Students()
     query = Query(student)
-
     student.createTable(data)
-
 
     # ------ mian function  -------#
 
