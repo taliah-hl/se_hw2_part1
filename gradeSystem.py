@@ -142,27 +142,180 @@ class Query:
         self.student=student
     
     def ShowScore(self, sid):
+        #[update]:要判斷輸入的id是否真實存在，加上輸出學生的ID和姓名
         print((self.student.studentInfo.loc[sid]))
     def showGradeLetter(self, sid):
-        pass
+        #[todo]:印出學生等第的那一排
+        try:
+            student_average = self.student.studentInfo.at[sid,"average"]
+            student_grade = self.scoreToGrade(student_average)
+            student_name = self.student.studentInfo.at[sid,"name"]
+            print("Student ID:",sid)
+            print("Student Name:",student_name)
+            print("Student Grade letter:",student_grade)
+        except KeyError:
+            print("Student ID:",sid,"not found")
+        
     def showAverage(self, sid):
-        pass
+        #[todo]:印出學生平均成績的那一排
+        try:
+            student_average = self.student.studentInfo.at[sid,"average"]
+            student_name = self.student.studentInfo.at[sid,"name"]
+            print("Student ID:",sid)
+            print("Student Name:",student_name)
+            print("Student Average:",student_average)
+        except KeyError:
+            print("Student ID:",sid,"not found")
+        
     def showRank(self, sid):
-        pass
+        #[todo]:計算排名+印出排名
+        try:
+            self.updateAverage()
+            sorted_students = self.student.studentInfo.sort_values(by='average', ascending=False)
+            student_rank = sorted_students.index.get_loc(sid)+1
+            student_name = self.student.studentInfo.at[sid,"name"]
+            print("Student ID:",sid)
+            print("Student Name:",student_name)
+            print("Student Rank:", student_rank)
+        except KeyError:
+            print("Student ID:",sid,"not found")
+
     def showDistribution(self):
-        pass
+        #[todo]:迴圈統計人數+印出排名
+        try:
+            self.updateGrade()
+            grade_distribution = self.student.studentInfo.groupby('grade').size().reset_index(name='count')
+            print("Grade Distribution:")
+            print(tabulate(grade_distribution, headers='keys', tablefmt='psql'))
+        except Exception as e:
+            print("Error occurred while printing grade distribution:", e)
+
     def filtering(self, scoreLargerThan):
-        pass
-    def addStudent(self, sid, name, listOfScore):
-        pass
-    def updateGrade(self, sid, subject):
-        pass
-    def updateWeights(self, listOfWeight):
-        pass
+        #[todo]:迴圈跑一次所有學生，符合標準的印出來
+        try:
+            self.updateAverage()
+            above_scoreLargeThan = self.student.studentInfo[self.student.studentInfo['average'] > scoreLargerThan]
+            if above_scoreLargeThan.empty:
+                print("No student")
+            else:
+                print(tabulate(above_scoreLargeThan[['ID', 'name', 'lab1', 'lab2', 'lab3', 'midTerm', 'finalExam', 'average', 'grade']], headers='keys', tablefmt='psql'))
+        except Exception as e:
+            print("Error occurred while printing grade distribution:", e)
+
+    def addStudent(self):
+        #[todo]:開一個新的row放新學生的資料
+        try:
+            input_str = input("請依格式輸入新增的學生資訊(格式: ID Name lab1 lab2 lab3 midTerm finalExam): ")
+            student_info_list = input_str.split()
+            if len(student_info_list) != 7:
+                print("未依格式輸入資訊，請重新確認您的資訊~")
+                return
+
+            student_id = student_info_list[0]
+            student_name = student_info_list[1]
+            lab1 = float(student_info_list[2])
+            lab2 = float(student_info_list[3])
+            lab3 = float(student_info_list[4])
+            mid_term = float(student_info_list[5])
+            final_exam = float(student_info_list[6])
+
+            new_student_info = [student_id, student_name, lab1, lab2, lab3, mid_term, final_exam]
+
+            print("新增資訊為: ",new_student_info)
+            Y_N = input("請確認您輸入的資訊是否正確?(Y/N) ")
+            YES = Y_N.split()
+            if YES == "N":
+                return
+
+            self.addStudent(new_student_info)
+
+            print("New student added successfully.")
+
+        except ValueError:
+            print("輸入無效")
+        except Exception as e:
+            print("Error occurred while adding new student:", e)
+        
+    def updateGrade(self, sid):
+        #[todo]:更新指定學生的成績+重新計算該學生的成績平均&等第
+        try:
+
+            if sid not in self.student.studentInfo.index:
+                print(sid, "not found")
+                return
+
+            lab1 = float(input("Enter new lab1 score: "))
+            lab2 = float(input("Enter new lab2 score: "))
+            lab3 = float(input("Enter new lab3 score: "))
+            mid_term = float(input("Enter new midterm score: "))
+            final_exam = float(input("Enter new final exam score: "))
+            student_name = self.student.studentInfo.at[sid,"name"]
+
+            # 更新學生的成績
+            self.student.updateScoreOfStudent(sid, 'lab1', lab1)
+            self.student.updateScoreOfStudent(sid, 'lab2', lab2)
+            self.student.updateScoreOfStudent(sid, 'lab3', lab3)
+            self.student.updateScoreOfStudent(sid, 'midTerm', mid_term)
+            self.student.updateScoreOfStudent(sid, 'finalExam', final_exam)
+
+            print("新增資訊為: ", sid, " ", student_name, " ", lab1, " ", lab2, " ", lab3, " ", mid_term, " ", final_exam, " ",)
+            Y_N = input("請確認您輸入的資訊是否正確?(Y/N) ")
+            YES = Y_N.split()
+            if YES == "N":
+                return
+
+            print("Student scores updated successfully.")
+
+        except ValueError:
+            print("輸入無效")
+        except Exception as e:
+            print("Error occurred while updating student scores:", e)
+        
+    def updateWeights(self):
+        #[todo]:更新加權+重新計算所有學生的平均&等第
+        try:
+            new_weight = [float(x) for x in input("請依照順序輸入加權(順序: lab1 lab2 lab3 midTerm finalExam): ").split()]
+
+            if len(new_weight) != 5 or sum(new_weight) != 1:
+                print("無效輸入，請重新輸入")
+                return
+
+            print("新增資訊為: ",new_weight)
+            Y_N = input("請確認您輸入的資訊是否正確?(Y/N) ")
+            YES = Y_N.split()
+            if YES == "N":
+                return
+            
+            self.updateWeight(new_weight)
+            self.updateAverage()
+            self.updateGrade()
+
+            print("Weights updated and grades recalculated successfully.")
+
+        except ValueError:
+            print("輸入無效")
+        except Exception as e:
+            print("Error occurred while updating weights and recalculating grades:", e)
+
     def showMenu(self):
-        pass
+        #[todo]:印出menu
+        print("Welcome to the Grade System.")
+        print("0) Show menu")
+        print("1) Show grade")
+        print("2) Show grade letter")
+        print("3) Show average")
+        print("4) Show rank")
+        print("5) Show distribution")
+        print("6) Filtering")
+        print("7) Add student")
+        print("8) Update grade")
+        print("9) Update weights")
+        print("10) Exit")
+        print("請輸入指令(0~10)開始使用: ")
+    
     def exit(self):
-        pass
+        #[todo]:離開
+        print("~歡迎下次再使用該系統，祝您有美好的一天~")
     
 def readInput()->list:
     """
@@ -256,10 +409,54 @@ if __name__ == "__main__":
     print(UI)
     while(True):
         cmd = input("請輸入指令(0~10)開始使用: ")
-        if cmd =="1":
+        #[todo]:補齊剩下的10個功能
+        #0.輸出UI
+        if cmd == "0":
+            query.showMenu()
+        elif cmd =="1":
             sid = input("請輸入ID: ")
             sid = int(sid)
             query.ShowScore(sid)
+        #2.獲得學生ID+輸出學生等第
+        elif cmd == "2":
+            sid = input("請輸入ID: ")
+            sid = int(sid)
+            query.showGradeLetter(sid)
+        #3.獲得學生ID+輸出學生平均
+        elif cmd == "3":
+            sid = input("請輸入ID: ")
+            sid = int(sid)
+            query.showAverage(sid)
+        #4.獲得學生ID+輸出學生名次
+        elif cmd == "4":
+            sid = input("請輸入ID: ")
+            sid = int(sid)
+            query.showRank(sid)
+        #5.輸出統計人數
+        elif cmd == "5":
+            query.showDistribution()
+        #6.獲得分數+輸出符合學生
+        elif cmd == "6":
+            scoreLargerThan = input("請輸入只定分數: ")
+            scoreLargerThan = int(scoreLargerThan)
+            query.filtering(scoreLargerThan)
+        #7.獲得要新增的學生資訊+放進去
+        elif cmd == "7":
+            query.addStudent()
+        #8.獲得要更新的學生和資訊+放進去
+        elif cmd == "8":
+            sid = input("請輸入ID: ")
+            sid = int(sid)
+            query.updateGrade(sid)
+        #9.獲得要新加權+更新
+        elif cmd == "9":
+            query.updateWeights()
+        #10.離開
+        elif cmd == "10":
+            query.exit()
+            break
+        else:  
+            print("輸入錯誤!")
     
     
 
