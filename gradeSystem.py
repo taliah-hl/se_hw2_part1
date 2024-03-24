@@ -6,6 +6,10 @@ TO DO
 2. 最外層for loop, 讀input -> call query的相應method
 3. 在可能出錯地方加 try...except... block 
 4. 現在的try...except... block 只有打印error, 需加上code 接回去讓使用者重新輸入
+
+[新to do]
+所有method + 回傳值
+e.g. return False = error -> 傳到main -> 使main 知道收到Fasle = 要prompt user 重新輸入
 """
 
 import pandas as pd
@@ -286,9 +290,9 @@ class Query:
             if YES == "N":
                 return
             
-            self.updateWeight(new_weight)
-            self.updateAverage()
-            self.updateGrade()
+            self.student.updateWeight(new_weight)
+            self.student.updateAverage()
+            self.student.updateGrade()
 
             print("Weights updated and grades recalculated successfully.")
 
@@ -437,7 +441,7 @@ if __name__ == "__main__":
             query.showDistribution()
         #6.獲得分數+輸出符合學生
         elif cmd == "6":
-            scoreLargerThan = input("請輸入只定分數: ")
+            scoreLargerThan = input("請輸入指定分數: ")
             scoreLargerThan = int(scoreLargerThan)
             query.filtering(scoreLargerThan)
         #7.獲得要新增的學生資訊+放進去
