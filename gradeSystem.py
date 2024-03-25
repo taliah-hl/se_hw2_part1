@@ -134,25 +134,44 @@ class Students:
         self.studentInfo.at[sid, "grade"] = self.scoreToGrade(self.studentInfo.at[sid, "average"])
 
 
-    def testFunc(self):
-        # for index, row in self.studentInfo.iterrows():
-        #     print(row)
-        print("index")
-        print(self.studentInfo.index.values)
+def testFunc(student, query):
+    # for index, row in self.studentInfo.iterrows():
+    #     print(row)
+    print("showScore")
+    query.showScore(955002056)
+    print("showGradeLetter")
+    query.showGradeLetter(955002056)
+    print("showAverage")
+    query.showAverage(955002056)
+    print("showRank")
+    query.showRank(955002056)
+    print("showDistribution")
+    query.showDistribution()
+    print("filtering")
+    query.filtering(90)
+    print("addStudent")
+    query.addStudent()
+    print("updateGrade")
+    query.updateGrade(955002056)
+    print("updateWeights")
+    query.updateWeights()
+    print("showMenu")
+    query.showMenu()
+
 
 
 class Query:
     def __init__(self, student) -> None:
         self.student=student
     
-    def ShowScore(self, sid):
+    def showScore(self, sid):
         #[update]:要判斷輸入的id是否真實存在，加上輸出學生的ID和姓名
         print((self.student.studentInfo.loc[sid]))
     def showGradeLetter(self, sid):
         #[todo]:印出學生等第的那一排
         try:
             student_average = self.student.studentInfo.at[sid,"average"]
-            student_grade = self.scoreToGrade(student_average)
+            student_grade = self.student.scoreToGrade(student_average)
             student_name = self.student.studentInfo.at[sid,"name"]
             print("Student ID:",sid)
             print("Student Name:",student_name)
@@ -174,7 +193,6 @@ class Query:
     def showRank(self, sid):
         #[todo]:計算排名+印出排名
         try:
-            self.updateAverage()
             sorted_students = self.student.studentInfo.sort_values(by='average', ascending=False)
             student_rank = sorted_students.index.get_loc(sid)+1
             student_name = self.student.studentInfo.at[sid,"name"]
@@ -187,7 +205,6 @@ class Query:
     def showDistribution(self):
         #[todo]:迴圈統計人數+印出排名
         try:
-            self.updateGrade()
             grade_distribution = self.student.studentInfo.groupby('grade').size().reset_index(name='count')
             print("Grade Distribution:")
             print(tabulate(grade_distribution, headers='keys', tablefmt='psql'))
@@ -231,12 +248,10 @@ class Query:
             if YES == "N":
                 return
 
-            self.addStudent(new_student_info)
+            self.student.addStudent(new_student_info)
+            #[to fix] column mis match problem
 
             print("New student added successfully.")
-
-        except ValueError:
-            print("輸入無效")
         except Exception as e:
             print("Error occurred while adding new student:", e)
         
@@ -280,7 +295,7 @@ class Query:
         try:
             new_weight = [float(x) for x in input("請依照順序輸入加權(順序: lab1 lab2 lab3 midTerm finalExam): ").split()]
 
-            if len(new_weight) != 5 or sum(new_weight) != 1:
+            if len(new_weight) != 5 :
                 print("無效輸入，請重新輸入")
                 return
 
@@ -362,6 +377,8 @@ def sanityCheck(data, toPrint=False):
     
 
 
+
+
 def uat():
     """
     內部測試用
@@ -376,7 +393,8 @@ def uat():
     #student.printTable()
 
     ## testing query
-    query.ShowScore(995002901)
+    query.showScore(995002901)
+    
 
 
 if __name__ == "__main__":
@@ -395,6 +413,9 @@ if __name__ == "__main__":
     query = Query(student)
     student.createTable(data)
 
+    # ----- UAT  --------------#
+    #testFunc(student, query)
+
     # ------ mian function  -------#
 
     UI = """Welcome to the Grade System.
@@ -410,6 +431,9 @@ if __name__ == "__main__":
     9) Update weights
     10) Exit
     """
+    
+
+    # ===============================================
     print(UI)
     while(True):
         cmd = input("請輸入指令(0~10)開始使用: ")
@@ -420,7 +444,7 @@ if __name__ == "__main__":
         elif cmd =="1":
             sid = input("請輸入ID: ")
             sid = int(sid)
-            query.ShowScore(sid)
+            query.showScore(sid)
         #2.獲得學生ID+輸出學生等第
         elif cmd == "2":
             sid = input("請輸入ID: ")
@@ -428,9 +452,11 @@ if __name__ == "__main__":
             query.showGradeLetter(sid)
         #3.獲得學生ID+輸出學生平均
         elif cmd == "3":
+            sucess = False
             sid = input("請輸入ID: ")
             sid = int(sid)
             query.showAverage(sid)
+            
         #4.獲得學生ID+輸出學生名次
         elif cmd == "4":
             sid = input("請輸入ID: ")
