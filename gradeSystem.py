@@ -10,6 +10,12 @@ TO DO
 [新to do]
 所有method + 回傳值
 e.g. return False = error -> 傳到main -> 使main 知道收到Fasle = 要prompt user 重新輸入
+
+[3.25]
+1.加權更新後爆掉(猜測可能平均計算的問題)
+2.新增學生
+3.多加一句話
+4.回傳10
 """
 
 import pandas as pd
@@ -214,12 +220,11 @@ class Query:
     def filtering(self, scoreLargerThan):
         #[todo]:迴圈跑一次所有學生，符合標準的印出來
         try:
-            self.updateAverage()
             above_scoreLargeThan = self.student.studentInfo[self.student.studentInfo['average'] > scoreLargerThan]
             if above_scoreLargeThan.empty:
                 print("No student")
             else:
-                print(tabulate(above_scoreLargeThan[['ID', 'name', 'lab1', 'lab2', 'lab3', 'midTerm', 'finalExam', 'average', 'grade']], headers='keys', tablefmt='psql'))
+                print(tabulate(above_scoreLargeThan, headers='keys', tablefmt='psql'))
         except Exception as e:
             print("Error occurred while printing grade distribution:", e)
 
@@ -330,7 +335,7 @@ class Query:
         print("8) Update grade")
         print("9) Update weights")
         print("10) Exit")
-        print("請輸入指令(0~10)開始使用: ")
+        # print("請輸入指令(0~10)開始使用: ")
     
     def exit(self):
         #[todo]:離開
