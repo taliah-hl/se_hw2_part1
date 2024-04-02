@@ -57,6 +57,8 @@ class Students:
 
         self.updateAverage()
         self.updateGrade()
+        print("len of col:")
+        print(len(self.studentInfo.columns))
 
     def updateWeight(self, newWeight):
         """
@@ -83,7 +85,24 @@ class Students:
         print(tabulate(self.studentInfo, headers='keys', tablefmt='psql'))
 
     def addStudent(self, data):
-        self.studentInfo.loc[len(self.studentInfo)] = data
+        assert(len(data)==7)
+        data.append(np.nan)
+        data.append(np.nan)
+        # new_row = pd.DataFrame([data[1:]], columns=self.studentInfo.columns, index=[data[0]])
+        # self.studentInfo.loc[len(self.studentInfo)] = data
+
+        self.studentInfo.loc[data[0]] = data[1:]
+        self.updateAverageOfStudent(len(self.studentInfo)-1)
+        self.updateGradeOfStudent(len(self.studentInfo)-1)
+
+    def updateAverageOfStudent(self, row):
+        first_col = self.studentInfo.columns.get_loc("lab1")
+        last_col = self.studentInfo.columns.get_loc("finalExam")
+        self.studentInfo.iloc[row, self.studentInfo.columns.get_loc("average")] = np.sum(
+                        self.studentInfo.iloc[row, first_col:last_col+1] * self.weight)
+    def updateGradeOfStudent(self, row):
+        self.studentInfo.iloc[row, self.studentInfo.columns.get_loc("grade")] = self.scoreToGrade(self.studentInfo.iloc[row, self.studentInfo.columns.get_loc("average")])
+
     def updateAverage(self):
         
         # 重算average 的Column
@@ -418,13 +437,16 @@ def uat(student, query):
     ### test case 1
     # [to do] move this to unit test
     print("===================\n====================")
+    print("no. of col")
+    print(len(student.studentInfo.columns))
+    print(student.studentInfo.columns)
     student.updateScoreOfStudent(955002056, "lab1", 1)
-    new_student = [985111111, "陳小明", 100, 100, 100, 100, 100, 100, "hi"]
+    new_student = [10, "陳小明", 10.0, 10.0, 10.0, 10.0, 10.0]
     student.addStudent(new_student)
-    #student.printTable()
+    student.printTable()
 
     ## testing query
-    query.showScore(995002901)
+    #query.showScore(10)
     
 
 
@@ -445,7 +467,7 @@ if __name__ == "__main__":
     student.createTable(data)
 
     # ----- UAT  --------------#
-    #testFunc(student, query)
+    # uat(student, query)
 
     # ------ mian function  -------#
 
