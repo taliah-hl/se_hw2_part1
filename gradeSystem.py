@@ -21,7 +21,19 @@ e.g. return False = error -> 傳到main -> 使main 知道收到Fasle = 要prompt
 import pandas as pd
 from tabulate import tabulate
 import numpy as np
-
+UI = """Welcome to the Grade System.
+    0) Show menu
+    1) Show grade
+    2) Show grade letter
+    3) Show average
+    4) Show rank
+    5) Show distribution
+    6) Filtering
+    7) Add student
+    8) Update grade
+    9) Update weights
+    10) Exit
+    """
 
 class Students:
     
@@ -71,7 +83,7 @@ class Students:
         print(tabulate(self.studentInfo, headers='keys', tablefmt='psql'))
 
     def addStudent(self, data):
-        self.studentInfo.loc[data[0]] = data[1:]
+        self.studentInfo.loc[len(self.studentInfo)] = data
     def updateAverage(self):
         
         # 重算average 的Column
@@ -149,12 +161,10 @@ class Query:
     
     def showScore(self, sid):
         #[update]:要判斷輸入的id是否真實存在，加上輸出學生的ID和姓名
-        print("現在正在執行 1.Show score")
-        print((self.student.studentInfo.loc[sid]))
+        print(tabulate(self.student.studentInfo.loc[[sid]], headers='keys', tablefmt='psql'))
         return 1
     def showGradeLetter(self, sid):
         #[todo]:印出學生等第的那一排
-        print("現在正在執行 2.Show grade letter")
         try:
             student_average = self.student.studentInfo.at[sid,"average"]
             student_grade = self.student.scoreToGrade(student_average)
@@ -164,12 +174,11 @@ class Query:
             print("Student Grade letter:",student_grade)
             return 1
         except KeyError:
-            print("Student ID:",sid,"not found")
+            print("找不到Student ID:",sid,",請重新輸入")
             return 0
         
     def showAverage(self, sid):
         #[todo]:印出學生平均成績的那一排
-        print("現在正在執行 3.Show average")
         try:
             student_average = self.student.studentInfo.at[sid,"average"]
             student_name = self.student.studentInfo.at[sid,"name"]
@@ -183,7 +192,6 @@ class Query:
         
     def showRank(self, sid):
         #[todo]:計算排名+印出排名
-        print("現在正在執行 4.Show rank")
         try:
             sorted_students = self.student.studentInfo.sort_values(by='average', ascending=False)
             student_rank = sorted_students.index.get_loc(sid)+1
@@ -198,7 +206,6 @@ class Query:
 
     def showDistribution(self):
         #[todo]:迴圈統計人數+印出排名
-        print("現在正在執行 5.Show distribution")
         try:
             grade_distribution = self.student.studentInfo.groupby('grade').size().reset_index(name='count')
             print("Grade Distribution:")
@@ -210,7 +217,6 @@ class Query:
 
     def filtering(self, scoreLargerThan):
         #[todo]:迴圈跑一次所有學生，符合標準的印出來
-        print("現在正在執行 6.Filtering")
         try:
             above_scoreLargeThan = self.student.studentInfo[self.student.studentInfo['average'] > scoreLargerThan]
             if above_scoreLargeThan.empty:
@@ -219,129 +225,117 @@ class Query:
                 print(tabulate(above_scoreLargeThan, headers='keys', tablefmt='psql'))
             return 1
         except Exception as e:
-            print("Error occurred while printing grade distribution:", e)
+            print("打印成績分佈時出現錯誤:", e)
             return 0
 
     def addStudent(self):
+        while True:
         #[todo]:開一個新的row放新學生的資料
-        print("現在正在執行 7.Add student")
-        try:
-            input_str = input("請依格式輸入新增的學生資訊(格式: ID Name lab1 lab2 lab3 midTerm finalExam): ")
-            student_info_list = input_str.split()
-            if len(student_info_list) != 7:
-                print("未依格式輸入資訊，請重新確認您的資訊~")
-                return
+            try:
+                input_str = input("請依格式輸入新增的學生資訊(格式: ID Name lab1 lab2 lab3 midTerm finalExam): ")
+                student_info_list = input_str.split()
+                if len(student_info_list) != 7:
+                    print("未依格式輸入資訊，請重新確認您的資訊~")
+                    continue
 
-            student_id = student_info_list[0]
-            student_name = student_info_list[1]
-            lab1 = float(student_info_list[2])
-            lab2 = float(student_info_list[3])
-            lab3 = float(student_info_list[4])
-            mid_term = float(student_info_list[5])
-            final_exam = float(student_info_list[6])
+                student_id = student_info_list[0]
+                student_name = student_info_list[1]
+                lab1 = float(student_info_list[2])
+                lab2 = float(student_info_list[3])
+                lab3 = float(student_info_list[4])
+                mid_term = float(student_info_list[5])
+                final_exam = float(student_info_list[6])
 
-            new_student_info = [student_id, student_name, lab1, lab2, lab3, mid_term, final_exam]
+                new_student_info = [student_id, student_name, lab1, lab2, lab3, mid_term, final_exam]
 
-            print("新增資訊為: ",new_student_info)
-            Y_N = input("請確認您輸入的資訊是否正確?(Y/N) ")
-            YES = Y_N.split()
-            if YES == "N":
-                return
+                print("新增資訊為: ",new_student_info)
+                Y_N = input("請確認您輸入的資訊是否正確?(Y/N) ")
+                YES = Y_N.lower().strip()
+                if YES == "y":
+                    self.student.addStudent(new_student_info)
+                    print("Student added successfully.")
+                    return 1
+                else:
+                    print("輸入未獲確認,請重新輸入")
+                    continue    #user不確認，promptuser讓重新輸入 
 
-            self.student.addStudent(new_student_info)
-            #[to fix] column mis match problem
 
-            print("New student added successfully.")
-            return 1
-        except Exception as e:
-            print("Error occurred while adding new student:", e)
-            return 0
+            except Exception as e:
+                print("新增學生時出現錯誤: ", e)
         
     def updateGrade(self, sid):
-        #[todo]:更新指定學生的成績+重新計算該學生的成績平均&等第
-        print("現在正在執行 8.Update grade")
-        try:
+        while True:
+            #[todo]:更新指定學生的成績+重新計算該學生的成績平均&等第
+            try:
 
-            if sid not in self.student.studentInfo.index:
-                print(sid, "not found")
-                return
+                if sid not in self.student.studentInfo.index:
+                    print(sid, "not found")
+                    return
 
-            lab1 = float(input("Enter new lab1 score: "))
-            lab2 = float(input("Enter new lab2 score: "))
-            lab3 = float(input("Enter new lab3 score: "))
-            mid_term = float(input("Enter new midterm score: "))
-            final_exam = float(input("Enter new final exam score: "))
-            student_name = self.student.studentInfo.at[sid,"name"]
+                lab1 = float(input("Enter new lab1 score: "))
+                lab2 = float(input("Enter new lab2 score: "))
+                lab3 = float(input("Enter new lab3 score: "))
+                mid_term = float(input("Enter new midterm score: "))
+                final_exam = float(input("Enter new final exam score: "))
+                student_name = self.student.studentInfo.at[sid,"name"]
 
-            # 更新學生的成績
-            self.student.updateScoreOfStudent(sid, 'lab1', lab1)
-            self.student.updateScoreOfStudent(sid, 'lab2', lab2)
-            self.student.updateScoreOfStudent(sid, 'lab3', lab3)
-            self.student.updateScoreOfStudent(sid, 'midTerm', mid_term)
-            self.student.updateScoreOfStudent(sid, 'finalExam', final_exam)
+                print("新增資訊為: ", sid, " ", student_name, " ", lab1, " ", lab2, " ", lab3, " ", mid_term, " ", final_exam, " ",)
+                Y_N = input("請確認您輸入的資訊是否正確?(Y/N) ")
+                YES = Y_N.lower()
+                if YES == "n":
+                    print("輸入未獲確認,請重新輸入")
+                    continue
+                else:
+                    # 更新學生的成績
+                    self.student.updateScoreOfStudent(sid, 'lab1', lab1)
+                    self.student.updateScoreOfStudent(sid, 'lab2', lab2)
+                    self.student.updateScoreOfStudent(sid, 'lab3', lab3)
+                    self.student.updateScoreOfStudent(sid, 'midTerm', mid_term)
+                    self.student.updateScoreOfStudent(sid, 'finalExam', final_exam)
+                    print("Student scores updated successfully.")
+                    return 1
 
-            print("新增資訊為: ", sid, " ", student_name, " ", lab1, " ", lab2, " ", lab3, " ", mid_term, " ", final_exam, " ",)
-            Y_N = input("請確認您輸入的資訊是否正確?(Y/N) ")
-            YES = Y_N.split()
-            if YES == "N":
-                return
-
-            print("Student scores updated successfully.")
-            return 1
-
-        except ValueError:
-            print("輸入無效")
-            return 0
-        except Exception as e:
-            print("Error occurred while updating student scores:", e)
-            return 0
+            except ValueError:
+                print("輸入無效")
+                return 0
+            except Exception as e:
+                print("更新成績時出現錯誤:", e)
+                return 0
         
     def updateWeights(self):
         #[todo]:更新加權+重新計算所有學生的平均&等第
-        print("現在正在執行 9.Update weights")
-        try:
-            new_weight = [float(x) for x in input("請依照順序輸入加權(註: 加權總和必須等於1)(順序: lab1 lab2 lab3 midTerm finalExam): ").split()]
+        while(True):
+            try:
+                new_weight = [float(x) for x in input("請依照順序輸入加權(註: 加權總和必須等於1)(順序: lab1 lab2 lab3 midTerm finalExam): ").split()]
 
-            if len(new_weight) != 5 or sum(new_weight) != 1:
-                print("無效輸入，請重新輸入")
-                return
+                if len(new_weight) != 5 or sum(new_weight) != 1:
+                    print("無效輸入，請重新輸入")
+                    return
 
-            print("新增資訊為: ",new_weight)
-            Y_N = input("請確認您輸入的資訊是否正確?(Y/N) ")
-            YES = Y_N.split()
-            if YES == "N":
-                return
-            
-            self.student.updateWeight(new_weight)
-            self.student.updateAverage()
-            self.student.updateGrade()
+                print("新增資訊為: ",new_weight)
+                Y_N = input("請確認您輸入的資訊是否正確?(Y/N) ")
+                YES = Y_N.lower().split()
+                if YES == "n":
+                    print("輸入未獲確認,請重新輸入")
+                    continue
+                else:
+                    self.student.updateWeight(new_weight)
+                    self.student.updateAverage()
+                    self.student.updateGrade()
+                    print("Weights updated and grades recalculated successfully.")
+                    return 1
 
-            print("Weights updated and grades recalculated successfully.")
-            return 1
-
-        except ValueError:
-            print("輸入無效")
-            return 0
-        except Exception as e:
-            print("Error occurred while updating weights and recalculating grades:", e)
-            return 0
+            except ValueError:
+                print("輸入無效")
+                return 0
+            except Exception as e:
+                print("更新加權時出現錯誤:", e)
+                return 0
 
     def showMenu(self):
         #[todo]:印出menu
-        print("現在正在執行 0.Function menu")
-        print("Welcome to the Grade System.")
-        print("0) Show menu")
-        print("1) Show grade")
-        print("2) Show grade letter")
-        print("3) Show average")
-        print("4) Show rank")
-        print("5) Show distribution")
-        print("6) Filtering")
-        print("7) Add student")
-        print("8) Update grade")
-        print("9) Update weights")
-        print("10) Exit")
-        # print("請輸入指令(0~10)開始使用: ")
+        print(UI)
+
         return 1
     
     def exit(self):
@@ -455,19 +449,7 @@ if __name__ == "__main__":
 
     # ------ mian function  -------#
 
-    UI = """Welcome to the Grade System.
-    0) Show menu
-    1) Show grade
-    2) Show grade letter
-    3) Show average
-    4) Show rank
-    5) Show distribution
-    6) Filtering
-    7) Add student
-    8) Update grade
-    9) Update weights
-    10) Exit
-    """
+    
     
 
     # ===============================================
@@ -477,66 +459,99 @@ if __name__ == "__main__":
         #[todo]:補齊剩下的10個功能
         #0.輸出UI
         if cmd == "0":
-            S = 0
-            while(S==0):
-                S = query.showMenu()
+            success = 0
+            while(success==0):
+                success = query.showMenu()
         elif cmd =="1":
-            S = 0
-            while(S==0):
+            print("現在正在執行 1.Show score")
+            success = 0
+            while(success==0):
                 sid = input("請輸入ID: ")
-                sid = int(sid)
-                S = query.showScore(sid)
+                try:
+                    sid = int(sid)
+                except ValueError:
+                    print("輸入無效, 請重新輸入")
+                    continue
+                success = query.showScore(sid)
         #2.獲得學生ID+輸出學生等第
         elif cmd == "2":
-            S = 0
-            while(S==0):
+            print("現在正在執行 2.Show grade letter")
+            success = 0
+            while(success==0):
                 sid = input("請輸入ID: ")
-                sid = int(sid)
-                S = query.showGradeLetter(sid)
+                try:
+                    sid = int(sid)
+                except ValueError:
+                    print("輸入無效, 請重新輸入")
+                    continue
+                success = query.showGradeLetter(sid)
         #3.獲得學生ID+輸出學生平均
         elif cmd == "3":
-            S = 0
-            while(S==0):
+            print("現在正在執行 3.Show average")
+            success = 0
+            while(success==0):
                 sucess = False
                 sid = input("請輸入ID: ")
-                sid = int(sid)
-                S = query.showAverage(sid)     
+                try:
+                    sid = int(sid)
+                except ValueError:
+                    print("輸入無效, 請重新輸入")
+                    continue
+                success = query.showAverage(sid)     
         #4.獲得學生ID+輸出學生名次
         elif cmd == "4":
-            S = 0
-            while(S==0):
+            print("現在正在執行 4.Show rank")
+            success = 0
+            while(success==0):
                 sid = input("請輸入ID: ")
-                sid = int(sid)
-                S = query.showRank(sid)
+                try:
+                    sid = int(sid)
+                except ValueError:
+                    print("輸入無效, 請重新輸入")
+                    continue
+                success = query.showRank(sid)
         #5.輸出統計人數
         elif cmd == "5":
-            S = 0
-            while(S==0):
-                S = query.showDistribution()
+            print("現在正在執行 5.Show distribution")
+            success = 0
+            while(success==0):
+                success = query.showDistribution()
         #6.獲得分數+輸出符合學生
         elif cmd == "6":
-            S = 0
-            while(S==0):
+            print("現在正在執行 6.Filtering")
+            success = 0
+            while(success==0):
                 scoreLargerThan = input("請輸入指定分數: ")
-                scoreLargerThan = int(scoreLargerThan)
-                S = query.filtering(scoreLargerThan)
+                try:
+                    scoreLargerThan = int(scoreLargerThan)
+                except ValueError:
+                    print("輸入無效, 請重新輸入")
+                    continue
+                success = query.filtering(scoreLargerThan)
         #7.獲得要新增的學生資訊+放進去
         elif cmd == "7":
-            S = 0
-            while(S==0):
-                S = query.addStudent()
+            print("現在正在執行 7.Add student")
+            success = 0
+            while(success==0):
+                success = query.addStudent()
         #8.獲得要更新的學生和資訊+放進去
         elif cmd == "8":
-            S = 0
-            while(S==0):
+            print("現在正在執行 8.Update grade")
+            success = 0
+            while(success==0):
                 sid = input("請輸入ID: ")
-                sid = int(sid)
-                S = query.updateGrade(sid)
+                try:
+                    sid = int(sid)
+                except ValueError:
+                    print("輸入無效, 請重新輸入")
+                    continue
+                success = query.updateGrade(sid)
         #9.獲得要新加權+更新
         elif cmd == "9":
-            S = 0
-            while(S==0):
-                S = query.updateWeights()
+            print("現在正在執行 9.Update weights")
+            success = 0
+            while(success==0):
+                success = query.updateWeights()
         #10.離開
         elif cmd == "10":
             query.exit()
