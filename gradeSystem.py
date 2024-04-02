@@ -140,29 +140,6 @@ class Students:
         self.studentInfo.at[sid, "grade"] = self.scoreToGrade(self.studentInfo.at[sid, "average"])
 
 
-def testFunc(student, query):
-    # for index, row in self.studentInfo.iterrows():
-    #     print(row)
-    print("showScore")
-    query.showScore(955002056)
-    print("showGradeLetter")
-    query.showGradeLetter(955002056)
-    print("showAverage")
-    query.showAverage(955002056)
-    print("showRank")
-    query.showRank(955002056)
-    print("showDistribution")
-    query.showDistribution()
-    print("filtering")
-    query.filtering(90)
-    print("addStudent")
-    query.addStudent()
-    print("updateGrade")
-    query.updateGrade(955002056)
-    print("updateWeights")
-    query.updateWeights()
-    print("showMenu")
-    query.showMenu()
 
 
 
@@ -323,9 +300,9 @@ class Query:
         #[todo]:更新加權+重新計算所有學生的平均&等第
         print("現在正在執行 9.Update weights")
         try:
-            new_weight = [float(x) for x in input("請依照順序輸入加權(順序: lab1 lab2 lab3 midTerm finalExam): ").split()]
+            new_weight = [float(x) for x in input("請依照順序輸入加權(註: 加權總和必須等於1)(順序: lab1 lab2 lab3 midTerm finalExam): ").split()]
 
-            if len(new_weight) != 5 :
+            if len(new_weight) != 5 or sum(new_weight) != 1:
                 print("無效輸入，請重新輸入")
                 return
 
@@ -413,10 +390,33 @@ def sanityCheck(data, toPrint=False):
             print(data[i])
     
 
+def testFunc(student, query):
+    # for index, row in self.studentInfo.iterrows():
+    #     print(row)
+    print("showScore")
+    query.showScore(955002056)
+    print("showGradeLetter")
+    query.showGradeLetter(955002056)
+    print("showAverage")
+    query.showAverage(955002056)
+    print("showRank")
+    query.showRank(955002056)
+    print("showDistribution")
+    query.showDistribution()
+    print("filtering")
+    query.filtering(90)
+    print("addStudent")
+    query.addStudent()
+    print("updateGrade")
+    query.updateGrade(955002056)
+    print("updateWeights")
+    query.updateWeights()
+    print("showMenu")
+    query.showMenu()
 
 
 
-def uat():
+def uat(student, query):
     """
     內部測試用
     
