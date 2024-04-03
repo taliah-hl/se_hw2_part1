@@ -246,11 +246,28 @@ class Students:
 
     
     def updateScoreOfStudent(self, sid, subject, newScore):
+        """
+        update score of a student with a given student ID and subject, then update average and grade of this student
+
+        Parameters
+        ------
+        :param sid: student ID
+        :type sid: int
+        :param subject: subject name
+        :type subject: str
+        :param newScore: new score
+        :type newScore: float
+
+        Return
+        ------
+        :returns: 1 if successful, 0 otherwise
+        """
 
         try:
             self.studentInfo.at[sid, subject] = newScore
         except Exception as err:
             print(err)  # subject name does not match any subject
+            return 0
         
         # update average of this student
         first_col = self.studentInfo.columns.get_loc("lab1")
@@ -259,6 +276,7 @@ class Students:
 
         # update grade of this student
         self.studentInfo.at[sid, "grade"] = self.scoreToGrade(self.studentInfo.at[sid, "average"])
+        return 1
 
 
 
@@ -485,44 +503,26 @@ class Query:
         :returns: 1 if successful, 0 otherwise
         :rtype: int
         """
-        while True:
-            #[todo]:更新指定學生的成績+重新計算該學生的成績平均&等第
-            try:
-
-                if sid not in self.student.studentInfo.index:
-                    print(sid, "not found")
-                    return
-
-                lab1 = float(input("Enter new lab1 score: "))
-                lab2 = float(input("Enter new lab2 score: "))
-                lab3 = float(input("Enter new lab3 score: "))
-                mid_term = float(input("Enter new midterm score: "))
-                final_exam = float(input("Enter new final exam score: "))
-                student_name = self.student.studentInfo.at[sid,"name"]
-
-                print("新增資訊為: ", sid, " ", student_name, " ", lab1, " ", lab2, " ", lab3, " ", mid_term, " ", final_exam, " ",)
-                Y_N = input("請確認您輸入的資訊是否正確?(Y/N) ")
-                YES = Y_N.lower()
-                if YES == "n":
-                    print("輸入未獲確認,請重新輸入")
-                    continue
-                else:
-                    # 更新學生的成績
-                    self.student.updateScoreOfStudent(sid, 'lab1', lab1)
-                    self.student.updateScoreOfStudent(sid, 'lab2', lab2)
-                    self.student.updateScoreOfStudent(sid, 'lab3', lab3)
-                    self.student.updateScoreOfStudent(sid, 'midTerm', mid_term)
-                    self.student.updateScoreOfStudent(sid, 'finalExam', final_exam)
-                    print("Student scores updated successfully.")
-                    return 1
-
-            except ValueError:
-                print("輸入無效")
+        try:
+            if sid not in self.student.studentInfo.index:
+                print(sid, "SID not found")
                 return 0
-            except Exception as e:
-                print("更新成績時出現錯誤:", e)
+            scores = {}
+            for score_type in ['lab1', 'lab2', 'lab3', 'midTerm', 'finalExam']:
+                scores[score_type] = float(input(f"Enter new {score_type} score: "))
+            student_name = self.student.studentInfo.at[sid,"name"]
+            print("新增資訊為: ", sid, student_name, *scores.values())
+            if input("請確認您輸入的資訊是否正確?(Y/N) ").lower() == "n":
+                print("輸入未獲確認,請重新輸入")
                 return 0
-        
+            for score_type, score in scores.items():
+                self.student.updateScoreOfStudent(sid, score_type, score)
+            print("Student scores updated successfully.")
+            return 1
+        except ValueError:
+            print("輸入無效")
+            return 0
+
     def updateWeights(self):
         """
         Update the weights for calculating the average score.
@@ -536,34 +536,27 @@ class Query:
         :returns: 1 if successful, 0 otherwise
         :rtype: int
         """
-        #[todo]:更新加權+重新計算所有學生的平均&等第
-        while(True):
-            try:
-                new_weight = [float(x) for x in input("請依照順序輸入加權(註: 加權總和必須等於1)(順序: lab1 lab2 lab3 midTerm finalExam): ").split()]
 
-                if len(new_weight) != 5 or sum(new_weight) != 1:
-                    print("無效輸入，請重新輸入")
-                    return
-
-                print("新增資訊為: ",new_weight)
-                Y_N = input("請確認您輸入的資訊是否正確?(Y/N) ")
-                YES = Y_N.lower().split()
-                if YES == "n":
-                    print("輸入未獲確認,請重新輸入")
-                    continue
-                else:
-                    self.student.updateWeight(new_weight)
-                    self.student.updateAverage()
-                    self.student.updateGrade()
-                    print("Weights updated and grades recalculated successfully.")
-                    return 1
-
-            except ValueError:
-                print("輸入無效")
+        try:
+            new_weight = [float(x) for x in input("請依照順序輸入加權(註: 加權總和必須等於1)(順序: lab1 lab2 lab3 midTerm finalExam): ").split()]
+            if len(new_weight) != 5 or sum(new_weight) != 1:
+                print("無效輸入，請重新輸入")
                 return 0
-            except Exception as e:
-                print("更新加權時出現錯誤:", e)
+            print("新增資訊為: ",new_weight)
+            if input("請確認您輸入的資訊是否正確?(Y/N) ").lower().split() == "y":
+                self.student.updateWeight(new_weight)
+                self.student.updateAverage()
+                self.student.updateGrade()
+                print("Weights updated and grades recalculated successfully.")
+                return 1
+            else:
+                print("輸入未獲確認,請重新輸入")
                 return 0
+
+        except ValueError:
+            print("輸入無效")
+            return 0
+
 
     def showMenu(self):
         """
@@ -685,7 +678,7 @@ def uat(student, query):
 if __name__ == "__main__":
     """
     This is the main entry point of the program. It performs the following steps:
-    
+
     1. Reads input data and performs a sanity check on it.
     2. Initializes the Students and Query objects, and creates a table with the input data.
     3. Prints the user interface and enters an infinite loop waiting for user commands.
