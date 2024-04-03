@@ -44,11 +44,20 @@ class Students:
         # 每個student一個row
         # col 為lab1, lab2,.... ,weighted average, grade
 
-    def createTable(self, data):
+    def createTable(self, data)->None:
         """
+        Create table for student info
+
         Parameters
         -------
-        data: list of list 
+        :param data: student info data table
+        :type data: list of list 
+
+        Return
+        ------
+        :returns: None
+        :rtype: None
+
         """
         self.studentInfo = pd.DataFrame(data, columns= [ele for ele in self.subjectNames])
         self.studentInfo["average"] = pd.NA
@@ -57,14 +66,18 @@ class Students:
 
         self.updateAverage()
         self.updateGrade()
-        print("len of col:")
-        print(len(self.studentInfo.columns))
+
 
     def updateWeight(self, newWeight):
         """
         Parameters
         ------
-        newWeight: list of float
+        :param newWeight: list of float
+        :type newWeight: list of float
+        Return
+        ------
+        :returns: None
+        :rtype: None
         """
         try:
             assert isinstance(newWeight, list)
@@ -79,12 +92,34 @@ class Students:
     
     def printTable(self):
         """
-        for debug only
+        print self.studentInfo for debugging
+
+        Parameters
+        ------
+        :param None
+
+        Return
+        ------
+        :returns: None
+        :rtype: None
         """
         assert self.studentInfo is not None
         print(tabulate(self.studentInfo, headers='keys', tablefmt='psql'))
 
     def addStudent(self, data):
+        """
+        add a student into self.studentInfo
+
+        Parameters
+        ------
+        :param data: student info to be added, list in order align with self.subjectNames
+        :type data: list
+
+        Return
+        ------
+        :returns: None
+        :rtype: None
+        """
         assert(len(data)==7)
         data.append(np.nan)
         data.append(np.nan)
@@ -96,14 +131,53 @@ class Students:
         self.updateGradeOfStudent(len(self.studentInfo)-1)
 
     def updateAverageOfStudent(self, row):
+        """
+        update average score of a student by calculating weighted average from self.weight
+
+        Parameters
+        ------
+        :param row: row index of the student
+        :type row: int
+
+        Return
+        ------
+        :returns: None
+        :rtype: None
+        """
         first_col = self.studentInfo.columns.get_loc("lab1")
         last_col = self.studentInfo.columns.get_loc("finalExam")
         self.studentInfo.iloc[row, self.studentInfo.columns.get_loc("average")] = np.sum(
                         self.studentInfo.iloc[row, first_col:last_col+1] * self.weight)
     def updateGradeOfStudent(self, row):
+        """
+        update letter grade of a student by calculating from average score
+
+        Parameters
+        ------
+        :param row: row index of the student
+        :type row: int
+
+        Return
+        ------
+        :returns: None
+        :rtype: None
+
+        """
         self.studentInfo.iloc[row, self.studentInfo.columns.get_loc("grade")] = self.scoreToGrade(self.studentInfo.iloc[row, self.studentInfo.columns.get_loc("average")])
 
     def updateAverage(self):
+        """
+        update average score of all students by calculating weighted average from self.weight
+        
+        Parameters
+        ------
+        :param None
+
+        Return
+        ------
+        :returns: None
+        :rtype: None        
+        """
         
         # 重算average 的Column
         first_col = self.studentInfo.columns.get_loc("lab1")
@@ -112,6 +186,18 @@ class Students:
             self.studentInfo.iloc[row, self.studentInfo.columns.get_loc("average")] = np.sum(self.studentInfo.iloc[row, first_col:last_col+1] * self.weight)
 
     def updateGrade(self):
+        """
+        update letter grade of all students by calculating from average score
+        
+        Parameters
+        ------
+        :param None
+
+        Return
+        ------
+        :returns: None
+        :rtype: None        
+        """
         
         # 重算grade 的column
         for row in range(len(self.studentInfo)):
@@ -119,13 +205,17 @@ class Students:
             
     def scoreToGrade(self, score)->str:
         """
+        Convert score to letter grade
+
         Parameters
         ------
-        score: float
+        :param score: average score of a student
+        :type score: float
 
         Return
         ------
-        letter: str
+        :return: letter grade
+        :rtype: str
         
         """
         try:
@@ -176,13 +266,56 @@ class Students:
 
 class Query:
     def __init__(self, student) -> None:
+        """
+        Initialize the Query class with a student object.
+
+        Parameters
+        -------
+        :param student: The student object
+        :type student: Student
+
+        Return
+        ------
+        :returns: None
+        :rtype: None
+        """
         self.student=student
     
-    def showScore(self, sid):
+    def showScore(self, sid)->int:
+        """
+        Show the score of a student with a given student ID.
+
+        Parameters
+        -------
+        :param sid: The student ID
+        :type sid: int
+
+        Return
+        ------
+        :returns: 1 if successful, 0 otherwise
+        :rtype: int
+        """
         #[update]:要判斷輸入的id是否真實存在，加上輸出學生的ID和姓名
-        print(tabulate(self.student.studentInfo.loc[[sid]], headers='keys', tablefmt='psql'))
-        return 1
-    def showGradeLetter(self, sid):
+        try:
+            print(tabulate(self.student.studentInfo.loc[[sid]], headers='keys', tablefmt='psql'))
+            return 1
+        except Exception as e:
+            print("Error occurred while printing student score:", e)
+            return 0
+    def showGradeLetter(self, sid)->int:
+        """
+        Show the grade letter of a student with a given student ID.
+
+        Parameters
+        -------
+        :param sid: The student ID
+        :type sid: int
+
+        Return
+        ------
+        :returns: 1 if successful, 0 otherwise
+        :rtype: int
+        """
         #[todo]:印出學生等第的那一排
         try:
             student_average = self.student.studentInfo.at[sid,"average"]
@@ -195,8 +328,22 @@ class Query:
         except KeyError:
             print("找不到Student ID:",sid,",請重新輸入")
             return 0
+
         
     def showAverage(self, sid):
+        """
+        Show the average score of a student with a given student ID.
+
+        Parameters
+        -------
+        :param sid: The student ID
+        :type sid: int
+
+        Return
+        ------
+        :returns: 1 if successful, 0 otherwise
+        :rtype: int
+        """
         #[todo]:印出學生平均成績的那一排
         try:
             student_average = self.student.studentInfo.at[sid,"average"]
@@ -208,8 +355,22 @@ class Query:
         except KeyError:
             print("Student ID:",sid,"not found")
             return 0
+
         
     def showRank(self, sid):
+        """
+        Show the rank of a student with a given student ID.
+
+        Parameters
+        -------
+        :param sid: The student ID
+        :type sid: int
+
+        Return
+        ------
+        :returns: 1 if successful, 0 otherwise
+        :rtype: int
+        """
         #[todo]:計算排名+印出排名
         try:
             sorted_students = self.student.studentInfo.sort_values(by='average', ascending=False)
@@ -223,7 +384,20 @@ class Query:
             print("Student ID:",sid,"not found")
             return 0
 
+
     def showDistribution(self):
+        """
+        Show the distribution of grades of all students.
+
+        Parameters
+        -------
+        :param None
+
+        Return
+        ------
+        :returns: 1 if successful, 0 otherwise
+        :rtype: int
+        """
         #[todo]:迴圈統計人數+印出排名
         try:
             grade_distribution = self.student.studentInfo.groupby('grade').size().reset_index(name='count')
@@ -235,7 +409,25 @@ class Query:
             return 0
 
     def filtering(self, scoreLargerThan):
+        """
+        Show students with an average score larger than a given value.
+
+        Parameters
+        -------
+        :param scoreLargerThan: The score threshold
+        :type scoreLargerThan: float
+
+        Return
+        ------
+        :returns: 1 if successful, 0 otherwise
+        :rtype: int
+        """
         #[todo]:迴圈跑一次所有學生，符合標準的印出來
+        try:
+            assert(isinstance(scoreLargerThan, int) or isinstance(scoreLargerThan, float))
+        except AssertionError:
+            print("輸入無效")
+            return 0
         try:
             above_scoreLargeThan = self.student.studentInfo[self.student.studentInfo['average'] > scoreLargerThan]
             if above_scoreLargeThan.empty:
@@ -248,41 +440,51 @@ class Query:
             return 0
 
     def addStudent(self):
-        while True:
-        #[todo]:開一個新的row放新學生的資料
-            try:
-                input_str = input("請依格式輸入新增的學生資訊(格式: ID Name lab1 lab2 lab3 midTerm finalExam): ")
-                student_info_list = input_str.split()
-                if len(student_info_list) != 7:
-                    print("未依格式輸入資訊，請重新確認您的資訊~")
-                    continue
+        """
+        Add a new student.
 
-                student_id = student_info_list[0]
-                student_name = student_info_list[1]
-                lab1 = float(student_info_list[2])
-                lab2 = float(student_info_list[3])
-                lab3 = float(student_info_list[4])
-                mid_term = float(student_info_list[5])
-                final_exam = float(student_info_list[6])
+        Parameters
+        -------
+        :param None
 
-                new_student_info = [student_id, student_name, lab1, lab2, lab3, mid_term, final_exam]
+        Return
+        ------
+        :returns: 1 if successful, 0 otherwise
+        :rtype: int
+        """
+        try:
+            student_info_list = input("請依格式輸入新增的學生資訊(格式: ID Name lab1 lab2 lab3 midTerm finalExam): ").split()
+            if len(student_info_list) != 7:
+                print("未依格式輸入資訊，請重新確認您的資訊~")
+                return 0
+            new_student_info = [student_info_list[0], student_info_list[1]] + list(map(float, student_info_list[2:]))
+            print("新增資訊為: ", new_student_info)
+            if input("請確認您輸入的資訊是否正確?(Y/N) ").lower().strip() == "y":
+                self.student.addStudent(new_student_info)
+                print("Student added successfully.")
+                return 1
+            else:
+                print("輸入未獲確認,請重新輸入")
+                return 0
+        except Exception as e:
+            print("新增學生時出現錯誤: ", e)
+            return 0
 
-                print("新增資訊為: ",new_student_info)
-                Y_N = input("請確認您輸入的資訊是否正確?(Y/N) ")
-                YES = Y_N.lower().strip()
-                if YES == "y":
-                    self.student.addStudent(new_student_info)
-                    print("Student added successfully.")
-                    return 1
-                else:
-                    print("輸入未獲確認,請重新輸入")
-                    continue    #user不確認，promptuser讓重新輸入 
-
-
-            except Exception as e:
-                print("新增學生時出現錯誤: ", e)
         
     def updateGrade(self, sid):
+        """
+        Update the grade of a student with a given student ID.
+
+        Parameters
+        -------
+        :param sid: The student ID
+        :type sid: int
+
+        Return
+        ------
+        :returns: 1 if successful, 0 otherwise
+        :rtype: int
+        """
         while True:
             #[todo]:更新指定學生的成績+重新計算該學生的成績平均&等第
             try:
@@ -322,6 +524,18 @@ class Query:
                 return 0
         
     def updateWeights(self):
+        """
+        Update the weights for calculating the average score.
+
+        Parameters
+        -------
+        :param None
+
+        Return
+        ------
+        :returns: 1 if successful, 0 otherwise
+        :rtype: int
+        """
         #[todo]:更新加權+重新計算所有學生的平均&等第
         while(True):
             try:
@@ -352,12 +566,36 @@ class Query:
                 return 0
 
     def showMenu(self):
+        """
+        Show the menu.
+
+        Parameters
+        -------
+        :param None
+
+        Return
+        ------
+        :returns: 1 if successful, 0 otherwise
+        :rtype: int
+        """
         #[todo]:印出menu
         print(UI)
 
         return 1
     
     def exit(self):
+        """
+        Exit the system.
+
+        Parameters
+        -------
+        :param None
+
+        Return
+        ------
+        :returns: None
+        :rtype: None
+        """
         #[todo]:離開
         print("現在正在執行 10.Exit")
         print("~歡迎下次再使用該系統，祝您有美好的一天~")
@@ -365,11 +603,16 @@ class Query:
     
 def readInput()->list:
     """
-    Read txt input of student data
+    Read student data from text file "input.txt".
+
+    Parameters
+    -------
+    :param None
+
     Return
-    -----
-    data: list
-    - list of list describing student data
+    ------
+    :returns: A list of lists containing student data
+    :rtype: list
     """
     with open ('input.txt', 'r', encoding='utf-8') as fio:
         data = fio.readlines()
@@ -389,8 +632,22 @@ def readInput()->list:
     
 
 def sanityCheck(data, toPrint=False):
+    """
+    Check the sanity of the data.
 
-    # [to do] change all assert to try...except...
+    Parameters
+    -------
+    :param data: The data to be checked, expected to be student info
+    :type data: list of list of strings
+    :param toPrint: Whether to print the first 5 rows of the data
+    :type toPrint: bool
+
+    Return
+    ------
+    :returns: None
+    :rtype: None
+    """
+
     assert isinstance(data, list)
     assert isinstance(data[0], list)
     for i in range(7):
@@ -402,31 +659,6 @@ def sanityCheck(data, toPrint=False):
             print(f"row {i}", sep="\t")
             print(data[i])
     
-
-def testFunc(student, query):
-    # for index, row in self.studentInfo.iterrows():
-    #     print(row)
-    print("showScore")
-    query.showScore(955002056)
-    print("showGradeLetter")
-    query.showGradeLetter(955002056)
-    print("showAverage")
-    query.showAverage(955002056)
-    print("showRank")
-    query.showRank(955002056)
-    print("showDistribution")
-    query.showDistribution()
-    print("filtering")
-    query.filtering(90)
-    print("addStudent")
-    query.addStudent()
-    print("updateGrade")
-    query.updateGrade(955002056)
-    print("updateWeights")
-    query.updateWeights()
-    print("showMenu")
-    query.showMenu()
-
 
 
 def uat(student, query):
@@ -451,9 +683,14 @@ def uat(student, query):
 
 
 if __name__ == "__main__":
-    # 1. read input
-    # 2. show interface
-    # inifinte loop for waiting command
+    """
+    This is the main entry point of the program. It performs the following steps:
+    
+    1. Reads input data and performs a sanity check on it.
+    2. Initializes the Students and Query objects, and creates a table with the input data.
+    3. Prints the user interface and enters an infinite loop waiting for user commands.
+    Depending on the command entered, it performs various operations such as showing the score, grade letter, average, rank, distribution, filtering students, adding a student, updating grade, updating weights, or exiting the program.
+    """
 
 
     #------ Read Input --------#
