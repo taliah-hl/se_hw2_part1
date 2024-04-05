@@ -123,12 +123,12 @@ class Students:
         assert(len(data)==7)
         data.append(np.nan)
         data.append(np.nan)
-        # new_row = pd.DataFrame([data[1:]], columns=self.studentInfo.columns, index=[data[0]])
-        # self.studentInfo.loc[len(self.studentInfo)] = data
+        new_row = pd.DataFrame([data[1:]], columns=self.studentInfo.columns, index=[data[0]])
+        self.studentInfo = pd.concat([self.studentInfo, new_row])
 
-        self.studentInfo.loc[data[0]] = data[1:]
-        self.updateAverageOfStudent(len(self.studentInfo)-1)
-        self.updateGradeOfStudent(len(self.studentInfo)-1)
+        #self.studentInfo.loc[data[0]] = data[1:]
+        self.updateAverageFromSid(data[0])
+        self.updateGradeFromSid(data[0])
 
     def updateAverageOfStudent(self, row):
         """
@@ -148,9 +148,30 @@ class Students:
         last_col = self.studentInfo.columns.get_loc("finalExam")
         self.studentInfo.iloc[row, self.studentInfo.columns.get_loc("average")] = np.sum(
                         self.studentInfo.iloc[row, first_col:last_col+1] * self.weight)
+        
+    def updateAverageFromSid(self, sid):
+        """
+        update average score of a student by calculating weighted average from self.weight
+
+        Parameters
+        ------
+        :param sid: sid the student
+        :type row: int
+
+        Return
+        ------
+        :returns: None
+        :rtype: None
+        
+        """
+        first_col = self.studentInfo.columns.get_loc("lab1")
+        last_col = self.studentInfo.columns.get_loc("finalExam")
+        self.studentInfo.at[sid, "average"] = np.sum(self.studentInfo.iloc[self.studentInfo.index.get_loc(sid), first_col:last_col+1] * self.weight)
+        
+
     def updateGradeOfStudent(self, row):
         """
-        update letter grade of a student by calculating from average score
+        update letter grade of a student from sid by calculating from average score
 
         Parameters
         ------
@@ -165,6 +186,24 @@ class Students:
         """
         self.studentInfo.iloc[row, self.studentInfo.columns.get_loc("grade")] = self.scoreToGrade(self.studentInfo.iloc[row, self.studentInfo.columns.get_loc("average")])
 
+    def updateGradeFromSid(self, sid):
+        """
+        update letter grade of a student from sid by calculating from average score
+
+        Parameters
+        ------
+        :param sid: sid the student
+        :type sid: int
+
+        Return
+        ------
+        :returns: None
+        :rtype: None
+
+        """
+        self.studentInfo.at[sid, "grade"] = self.scoreToGrade(self.studentInfo.at[sid, "average"])
+    
+    
     def updateAverage(self):
         """
         update average score of all students by calculating weighted average from self.weight
@@ -475,7 +514,10 @@ class Query:
             if len(student_info_list) != 7:
                 print("未依格式輸入資訊，請重新確認您的資訊~")
                 return 0
-            new_student_info = [student_info_list[0], student_info_list[1]] + list(map(float, student_info_list[2:]))
+            try:
+                new_student_info = [int(student_info_list[0]), student_info_list[1]] + list(map(float, student_info_list[2:]))
+            except ValueError:
+                print("未依格式輸入資訊，請重新確認您的資訊~")
             print("新增資訊為: ", new_student_info)
             if input("請確認您輸入的資訊是否正確?(Y/N) ").lower().strip() == "y":
                 self.student.addStudent(new_student_info)
@@ -522,6 +564,27 @@ class Query:
         except ValueError:
             print("輸入無效")
             return 0
+        
+    def printWeight(self):
+        """
+        Print the weights for calculating the average score.
+
+        Parameters
+        -------
+        :param None
+
+        Return
+        ------
+        :returns: 1 if successful, 0 otherwise
+        :rtype: int
+        """
+        try:
+            print("Weights for calculating the average score:")
+            print(self.student.weight)
+            return 1
+        except Exception as e:
+            print("Error occurred while printing weights:", e)
+            return 0
 
     def updateWeights(self):
         """
@@ -539,11 +602,13 @@ class Query:
 
         try:
             new_weight = [float(x) for x in input("請依照順序輸入加權(註: 加權總和必須等於1)(順序: lab1 lab2 lab3 midTerm finalExam): ").split()]
+            print(new_weight)
+            print(len(new_weight))
             if len(new_weight) != 5 or sum(new_weight) != 1:
                 print("無效輸入，請重新輸入")
                 return 0
             print("新增資訊為: ",new_weight)
-            if input("請確認您輸入的資訊是否正確?(Y/N) ").lower().split() == "y":
+            if input("請確認您輸入的資訊是否正確?(Y/N) ").lower().strip() == "y":
                 self.student.updateWeight(new_weight)
                 self.student.updateAverage()
                 self.student.updateGrade()
@@ -575,6 +640,22 @@ class Query:
         print(UI)
 
         return 1
+    
+    def printStudentInfo(self):
+        """
+        Print the student info for debugging.
+
+        Parameters
+        -------
+        :param None
+
+        Return
+        ------
+        :returns: None
+        :rtype: None
+        """
+        #[todo]:印出學生資訊
+        self.student.printTable()
     
     def exit(self):
         """
@@ -656,7 +737,8 @@ def sanityCheck(data, toPrint=False):
 
 def uat(student, query):
     """
-    內部測試用
+    internal testing function
+    
     
     """
     ### test case 1
@@ -666,9 +748,19 @@ def uat(student, query):
     print(len(student.studentInfo.columns))
     print(student.studentInfo.columns)
     student.updateScoreOfStudent(955002056, "lab1", 1)
-    new_student = [10, "陳小明", 10.0, 10.0, 10.0, 10.0, 10.0]
+    new_student = [123, "ABC", 10.0, 10.0, 10.0, 10.0, 10.0]
     student.addStudent(new_student)
     student.printTable()
+    indices = student.studentInfo.loc[student.studentInfo['name'] == 'ABC'].index
+    print("index: ",indices)
+    try:
+        print("sid: ", student.studentInfo.loc[123])
+        print(tabulate(student.studentInfo.loc[[123]], headers="keys", tablefmt= "psql"))
+    except Exception as err:
+        print(err)
+    
+    idx = student.studentInfo.loc[student.studentInfo['name'] == '張婉庭'].index
+    print("index of 張婉庭: ",idx)
 
     ## testing query
     #query.showScore(10)
@@ -697,7 +789,8 @@ if __name__ == "__main__":
     student.createTable(data)
 
     # ----- UAT  --------------#
-    # uat(student, query)
+    #uat(student, query)
+    #exit(0)
 
     # ------ mian function  -------#
 
@@ -808,6 +901,11 @@ if __name__ == "__main__":
         elif cmd == "10":
             query.exit()
             break
+        # ---------   uat   -----------
+        elif cmd == "11":
+            query.printStudentInfo()
+        elif cmd == "19":
+            query.printWeight()
         else:  
             print("輸入錯誤!")
     
