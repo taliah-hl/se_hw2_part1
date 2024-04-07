@@ -1,21 +1,20 @@
 """
-Grade system
---- [這裡給我們自己看] ----
-TO DO
-1. 刻好query的各method
-2. 最外層for loop, 讀input -> call query的相應method
-3. 在可能出錯地方加 try...except... block 
-4. 現在的try...except... block 只有打印error, 需加上code 接回去讓使用者重新輸入
+GradeSystem.py
 
-[新to do]
-所有method + 回傳值
-e.g. return False = error -> 傳到main -> 使main 知道收到Fasle = 要prompt user 重新輸入
+This module defines a grade management system for students. It provides functionalities to show grades, 
+calculate averages, rank students, show grade distribution, filter students, add new students, 
+update grades and weights.
 
-[3.25]
-1.加權更新後爆掉(猜測可能平均計算的問題)
-2.新增學生
-3.多加一句話 (已完成)
-4.回傳10 (已完成)
+Classes:
+    Students: Represents a collection of students and their grades.
+    Query: A class that provides methods for interacting with the Students class, such as adding new students, updating grades and weights, and displaying student data.
+Constants:
+    UI: A string that represents the user interface menu of the grade system.
+
+Dependencies:
+    pandas: Used to store and manipulate the student data.
+    tabulate: Used to format the output of the student data.
+    numpy: Used to perform calculations on the student data.
 """
 
 import pandas as pd
@@ -316,21 +315,7 @@ class Students:
         # update grade of this student
         self.studentInfo.at[sid, "grade"] = self.scoreToGrade(self.studentInfo.at[sid, "average"])
         return 1
-    # def _checkStudentExist(self, sid):
-    #     """
-    #     check if a student with a given student ID exists
 
-    #     Parameters
-    #     ------
-    #     :param sid: student ID
-    #     :type sid: int
-
-    #     Return
-    #     ------
-    #     :returns: True if the student exists, False otherwise
-    #     :rtype: bool
-    #     """
-    #     return sid in self.studentInfo.index
 
 
 
