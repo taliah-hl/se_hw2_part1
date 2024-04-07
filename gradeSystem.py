@@ -316,6 +316,21 @@ class Students:
         # update grade of this student
         self.studentInfo.at[sid, "grade"] = self.scoreToGrade(self.studentInfo.at[sid, "average"])
         return 1
+    # def _checkStudentExist(self, sid):
+    #     """
+    #     check if a student with a given student ID exists
+
+    #     Parameters
+    #     ------
+    #     :param sid: student ID
+    #     :type sid: int
+
+    #     Return
+    #     ------
+    #     :returns: True if the student exists, False otherwise
+    #     :rtype: bool
+    #     """
+    #     return sid in self.studentInfo.index
 
 
 
@@ -656,6 +671,7 @@ class Query:
         """
         #[todo]:印出學生資訊
         self.student.printTable()
+        return 1
     
     def exit(self):
         """
@@ -673,6 +689,7 @@ class Query:
         #[todo]:離開
         print("現在正在執行 10.Exit")
         print("~歡迎下次再使用該系統，祝您有美好的一天~")
+        return 1
 
     
 def readInput()->list:

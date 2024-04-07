@@ -1,8 +1,10 @@
 import unittest
 import pandas as pd
 import numpy as np
+from unittest.mock import patch
 
 from gradeSystem import *
+
 SID1 = 1001
 SID2 = 1002
 SID3 = 1003
@@ -58,29 +60,29 @@ class TestStudents(unittest.TestCase):
 
     def test_updateAverageOfStudent(self):
         self.students.updateAverageOfStudent(0)
-        self.assertNotEqual(self.students.studentInfo.loc[SID1, 'average'], pd.NA)
+        self.assertFalse(pd.isna(self.students.studentInfo.loc[SID1, 'average']))
 
     def test_updateAverageFromSid(self):
-        self.students.updateAverageFromSid(1)
-        self.assertNotEqual(self.students.studentInfo.loc[SID1, 'average'], pd.NA)
+        self.students.updateAverageFromSid(SID1)
+        self.assertFalse(pd.isna(self.students.studentInfo.loc[SID1, 'average']))
 
     def test_updateGradeOfStudent(self):
         self.students.updateGradeOfStudent(0)
-        self.assertNotEqual(self.students.studentInfo.loc[SID1, 'grade'], pd.NA)
+        self.assertFalse(pd.isna(self.students.studentInfo.loc[SID1, 'grade']))
 
     def test_updateGradeFromSid(self):
         self.students.updateGradeFromSid(SID1)
-        self.assertNotEqual(self.students.studentInfo.loc[SID1, 'grade'], pd.NA)
+        self.assertFalse(pd.isna(self.students.studentInfo.loc[SID1, 'grade']))
 
     def test_updateAverage(self):
         self.students.updateAverage()
-        self.assertNotEqual(self.students.studentInfo.loc[SID1, 'average'], pd.NA)
-        self.assertNotEqual(self.students.studentInfo.loc[SID1, 'average'], pd.NA)
+        self.assertFalse(pd.isna(self.students.studentInfo.loc[SID1, 'average']))
+        self.assertFalse(pd.isna(self.students.studentInfo.loc[SID2, 'average']))
 
     def test_updateGrade(self):
         self.students.updateGrade()
-        self.assertNotEqual(self.students.studentInfo.loc[SID1, 'grade'], pd.NA)
-        self.assertNotEqual(self.students.studentInfo.loc[SID1, 'grade'], pd.NA)
+        self.assertFalse(pd.isna(self.students.studentInfo.loc[SID1, 'grade']))
+        self.assertFalse(pd.isna(self.students.studentInfo.loc[SID2, 'grade']))
 
     def test_scoreToGrade(self):
         self.assertEqual(self.students.scoreToGrade(95), 'A+')
@@ -91,5 +93,62 @@ class TestStudents(unittest.TestCase):
         self.assertEqual(self.students.updateScoreOfStudent(SID1, 'lab1', 85), 1)
         self.assertEqual(self.students.studentInfo.loc[SID1, 'lab1'], 85)
 
+
+
+class TestQuery(unittest.TestCase):
+    def setUp(self):
+        self.student = Students()
+        self.data = [[SID1, '陳一明', 80, 85, 90, 95, 100],
+                     [SID2, '陳二明', 70, 75, 80, 85, 90]]
+        self.student.createTable(self.data)
+        self.query = Query(self.student)
+
+    def test_showScore(self):
+        self.assertEqual(self.query.showScore(SID1), 1)
+
+    def test_showGradeLetter(self):
+        self.assertEqual(self.query.showGradeLetter(SID1), 1)
+
+    def test_showAverage(self):
+        self.assertEqual(self.query.showAverage(SID1), 1)
+
+    def test_showRank(self):
+        self.assertEqual(self.query.showRank(SID1), 1)
+
+    def test_showDistribution(self):
+        self.assertEqual(self.query.showDistribution(), 1)
+
+    def test_filtering(self):
+        self.assertEqual(self.query.filtering(80), 1)
+
+    @patch('builtins.input', side_effect=['12345 John 90 90 90 90 90', 'y'])
+    def test_addStudent(self, mock_input):
+        self.assertEqual(self.query.addStudent(), 1)
+
+    @patch('builtins.input', side_effect=['90', '90', '90', '90', '90', 'y'])
+    def test_updateGrade(self, mock_input):
+        # Assuming that the student with ID 1 exists
+        self.assertEqual(self.query.updateGrade(SID1), 1)
+
+    def test_printWeight(self):
+        self.assertEqual(self.query.printWeight(), 1)
+
+    @patch('builtins.input', side_effect=['0.2 0.2 0.2 0.2 0.2', 'y'])
+    def test_updateWeights(self, mock_input):
+        # This test may need to be modified based on how the updateWeights method is implemented
+        self.assertEqual(self.query.updateWeights(), 1)
+
+    def test_showMenu(self):
+        self.assertEqual(self.query.showMenu(), 1)
+
+    def test_printStudentInfo(self):
+        # This test may need to be modified based on how the printStudentInfo method is implemented
+        self.assertEqual(self.query.printStudentInfo(), 1)
+
+    def test_exit(self):
+        # This test may need to be modified based on how the exit method is implemented
+        self.assertEqual(self.query.exit(), 1)
+
 if __name__ == '__main__':
     unittest.main()
+
