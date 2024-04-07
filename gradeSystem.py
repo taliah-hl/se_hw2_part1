@@ -617,8 +617,8 @@ class Query:
 
         try:
             new_weight = [float(x) for x in input("請依照順序輸入加權(註: 加權總和必須等於1)(順序: lab1 lab2 lab3 midTerm finalExam): ").split()]
-            print(new_weight)
-            print(len(new_weight))
+            # print(new_weight)
+            # print(len(new_weight))
             if len(new_weight) != 5 or sum(new_weight) != 1:
                 print("無效輸入，請重新輸入")
                 return 0
