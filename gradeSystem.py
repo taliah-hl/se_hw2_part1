@@ -903,13 +903,7 @@ if __name__ == "__main__":
         elif cmd == "10":
             query.exit()
             break
-        # ---------   uat   -----------
-        elif cmd == "11":
-            query.printStudentInfo()
-        elif cmd == "19":
-            query.printWeight()
-        else:  
-            print("輸入錯誤!")
+        
     
     
 
